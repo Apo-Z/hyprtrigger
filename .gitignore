@@ -1,0 +1,15 @@
+*.test
+*.out
+
+go.work
+go.work.sum
+
+.vscode/
+.idea/
+*.swp
+
+.DS_Store
+Thumbs.db
+
+*.local.json
+config.local.json
