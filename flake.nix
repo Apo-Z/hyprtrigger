@@ -17,7 +17,7 @@
         {
           hyprtrigger = pkgs.buildGoModule rec {
             pname = "hyprtrigger";
-            version = "0.0.1";
+            version = "0.0.2";
             srcHash = "sha256-9ouMKyeoUaIe3aq4b2Ho11OIG4MLPWZioQawKPyWPLk=";
             src = pkgs.fetchFromGitHub {
               owner = "Apo-Z";
