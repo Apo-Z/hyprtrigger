@@ -10,8 +10,8 @@ import (
 func (ev *Event) ExecuteCommand(windowID string) error {
 	command := strings.ReplaceAll(ev.Command, "{WINDOW_ID}", windowID)
 
+	fmt.Printf("Execution de la commande : %s\n", ev.Command)
 	var cmd *exec.Cmd
-
 	if ev.UseShell {
 		cmd = exec.Command("sh", "-c", command)
 	} else {

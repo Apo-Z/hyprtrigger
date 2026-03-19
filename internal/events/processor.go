@@ -6,26 +6,25 @@ import (
 )
 
 type Processor struct {
-	registry       *Registry
-	deduplicator   *DeduplicationManager
+	registry     *Registry
+	deduplicator *deduplicationManager
 }
 
-type DeduplicationManager struct {
+type deduplicationManager struct {
 	recentExecutions  []EventExecution
 	deduplicationTime time.Duration
 }
 
-func NewDeduplicationManager() *DeduplicationManager {
-	return &DeduplicationManager{
+func newDeduplicationManager() *deduplicationManager {
+	return &deduplicationManager{
 		recentExecutions:  make([]EventExecution, 0),
 		deduplicationTime: 2 * time.Second,
 	}
 }
 
-func (dm *DeduplicationManager) WasRecentlyExecuted(windowID, eventName, regex string) bool {
+func (dm *deduplicationManager) wasRecentlyExecuted(windowID, eventName, regex string) bool {
 	now := time.Now()
 
-	// Clean old executions
 	filtered := make([]EventExecution, 0)
 	for _, exec := range dm.recentExecutions {
 		if now.Sub(exec.Timestamp) <= dm.deduplicationTime {
@@ -34,17 +33,15 @@ func (dm *DeduplicationManager) WasRecentlyExecuted(windowID, eventName, regex s
 	}
 	dm.recentExecutions = filtered
 
-	// Check if recently executed
 	for _, exec := range dm.recentExecutions {
 		if exec.WindowID == windowID && exec.EventName == eventName && exec.Regex == regex {
 			return true
 		}
 	}
-
 	return false
 }
 
-func (dm *DeduplicationManager) RecordExecution(windowID, eventName, regex string) {
+func (dm *deduplicationManager) record(windowID, eventName, regex string) {
 	dm.recentExecutions = append(dm.recentExecutions, EventExecution{
 		WindowID:  windowID,
 		EventName: eventName,
@@ -56,7 +53,7 @@ func (dm *DeduplicationManager) RecordExecution(windowID, eventName, regex strin
 func NewProcessor(registry *Registry) *Processor {
 	return &Processor{
 		registry:     registry,
-		deduplicator: NewDeduplicationManager(),
+		deduplicator: newDeduplicationManager(),
 	}
 }
 
@@ -65,17 +62,16 @@ func (p *Processor) ProcessEvent(eventName, rawData string) error {
 	events := p.registry.GetEventsByName(eventName)
 
 	for _, event := range events {
-		if event.Match(eventData.Content) {
-			if p.deduplicator.WasRecentlyExecuted(eventData.WindowID, eventName, event.Regex) {
-				continue
-			}
-
-			if err := event.ExecuteCommand(eventData.WindowID); err != nil {
-				return fmt.Errorf("command execution failed for %s: %w", event.Name, err)
-			}
-
-			p.deduplicator.RecordExecution(eventData.WindowID, eventName, event.Regex)
+		if !event.Match(eventData.Content) {
+			continue
 		}
+		if p.deduplicator.wasRecentlyExecuted(eventData.WindowID, eventName, event.Regex) {
+			continue
+		}
+		if err := event.ExecuteCommand(eventData.WindowID); err != nil {
+			return fmt.Errorf("command execution failed for %s: %w", event.Name, err)
+		}
+		p.deduplicator.record(eventData.WindowID, eventName, event.Regex)
 	}
 	return nil
 }

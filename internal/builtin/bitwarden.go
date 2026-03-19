@@ -1,16 +1,12 @@
-package events
+package builtin
 
-import "hyprtrigger/pkg/events"
+import "hyprtrigger/internal/events"
 
-func RegisterBitwardenEvents() {
-	events.RegisterEvent(&events.Event{
+func registerBitwarden(r *events.Registry) {
+	r.RegisterBuiltin(&events.Event{
 		Name:     "windowtitlev2",
 		Regex:    "Bitwarden Password Manager",
 		Command:  `hyprctl --batch "dispatch setfloating address:0x{WINDOW_ID}; dispatch resizewindowpixel exact 20% 50%, address:0x{WINDOW_ID}; dispatch centerwindow"`,
 		UseShell: true,
 	})
-}
-
-func init() {
-	RegisterBitwardenEvents()
 }

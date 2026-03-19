@@ -1,9 +1,9 @@
-package socket
+package hyprland
 
 import (
 	"bufio"
 	"fmt"
-	"hyprtrigger/pkg/events"
+	"hyprtrigger/internal/events"
 	"strings"
 )
 
@@ -12,14 +12,11 @@ type Listener struct {
 }
 
 func NewListener(client *Client) *Listener {
-	return &Listener{
-		client: client,
-	}
+	return &Listener{client: client}
 }
 
 func (l *Listener) Listen() error {
-	conn := l.client.GetConnection()
-	scanner := bufio.NewScanner(conn)
+	scanner := bufio.NewScanner(l.client.GetConnection())
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -29,19 +26,16 @@ func (l *Listener) Listen() error {
 			continue
 		}
 
-		eventName := parts[0]
-		eventData := parts[1]
-
-		fmt.Printf("Event received: %s -> %s\n", eventName, eventData)
+		eventName, eventData := parts[0], parts[1]
+		fmt.Printf("Event: %s -> %s\n", eventName, eventData)
 
 		if err := events.ProcessEvent(eventName, eventData); err != nil {
-			fmt.Printf("Processing failed: %v\n", err)
+			fmt.Printf("Processing error: %v\n", err)
 		}
 	}
 
 	if err := scanner.Err(); err != nil {
 		return fmt.Errorf("socket read error: %w", err)
 	}
-
 	return nil
 }

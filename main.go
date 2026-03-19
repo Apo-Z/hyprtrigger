@@ -1,11 +1,7 @@
 package main
 
-import (
-	"hyprtrigger/cmd/hyprtrigger"
-	_ "hyprtrigger/events"
-)
+import "hyprtrigger/cmd"
 
 func main() {
-	hyprtrigger.Execute()
+	cmd.Execute()
 }
-

@@ -17,12 +17,9 @@ func GetConfigDirectory() string {
 func LoadAutoConfig() error {
 	configDir := GetConfigDirectory()
 
-	// Check if config directory exists
 	if _, err := os.Stat(configDir); os.IsNotExist(err) {
-		return nil // No error if directory doesn't exist
+		return nil
 	}
-
-	fmt.Printf("Loading auto-config from: %s\n", configDir)
 
 	files, err := filepath.Glob(filepath.Join(configDir, "*.json"))
 	if err != nil {
@@ -30,20 +27,20 @@ func LoadAutoConfig() error {
 	}
 
 	if len(files) == 0 {
-		fmt.Printf("No JSON files found in %s\n", configDir)
 		return nil
 	}
 
-	loadedCount := 0
+	fmt.Printf("Auto-loading from: %s\n", configDir)
+
+	loaded := 0
 	for _, file := range files {
-		fmt.Printf("Auto-loading: %s\n", filepath.Base(file))
 		if err := LoadEventsFromFile(file); err != nil {
 			fmt.Printf("Failed to load %s: %v\n", filepath.Base(file), err)
 			continue
 		}
-		loadedCount++
+		loaded++
 	}
 
-	fmt.Printf("Auto-loaded %d configuration file(s)\n", loadedCount)
+	fmt.Printf("Auto-loaded %d file(s)\n", loaded)
 	return nil
 }

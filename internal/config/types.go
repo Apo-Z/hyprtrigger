@@ -1,6 +1,6 @@
 package config
 
-import "hyprtrigger/pkg/events"
+import "hyprtrigger/internal/events"
 
 type EventConfig struct {
 	Events []events.Event `json:"events"`
